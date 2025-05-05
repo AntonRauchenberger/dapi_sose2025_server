@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Get and saves data to firestore
+ */
 public class FirestoreService {
 
     private Firestore db;

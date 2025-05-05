@@ -14,6 +14,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 
 import main.lib.services.FirestoreService;
 import main.lib.services.MqttService;
+import main.lib.services.RequestService;
 
 public class Main {
 
@@ -30,16 +31,16 @@ public class Main {
         // tempTopic.publish(msg);
         // System.out.println("data sent");
 
-        FirestoreService firestoreService = new FirestoreService();
-        List<QueryDocumentSnapshot> documents = firestoreService.getData("dogs");
+        // FirestoreService firestoreService = new FirestoreService();
+        // List<QueryDocumentSnapshot> documents = firestoreService.getData("dogs");
 
-        for (DocumentSnapshot doc : documents) {
-            String id = doc.getId();
-            Map<String, Object> daten = doc.getData();
+        // for (DocumentSnapshot doc : documents) {
+        // String id = doc.getId();
+        // Map<String, Object> daten = doc.getData();
 
-            System.out.println("Dokument-ID: " + id);
-            System.out.println("Daten: " + daten);
-        }
+        // System.out.println("Dokument-ID: " + id);
+        // System.out.println("Daten: " + daten);
+        // }
 
         // Map<String, Object> daten = new HashMap<>();
         // daten.put("name", "Anna");
@@ -48,5 +49,8 @@ public class Main {
 
         // String time = firestoreService.saveData("test", "test0", daten);
         // System.out.println("Gespeichert um: " + time);
+
+        Thread thread = new Thread(new RequestService());
+        thread.start();
     }
 }

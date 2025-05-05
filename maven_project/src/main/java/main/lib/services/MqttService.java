@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import org.eclipse.paho.client.mqttv3.*;
 
+/**
+ * Handles mqtt communication
+ */
 public class MqttService implements MqttCallback {
     private IMqttClient publisher;
     private IMqttClient subscriber;
