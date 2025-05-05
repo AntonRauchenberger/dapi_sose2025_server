@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -12,6 +13,7 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +70,37 @@ public class RequestService implements Runnable {
                           "timestamp": "%s"
                         }
                         """.formatted(Instant.now());
+                case "image" -> {
+                    try {
+                        File imageFile = new File("maven_project\\src\\main\\resources\\dog_example.png");
+
+                        if (!imageFile.exists()) {
+                            exchange.sendResponseHeaders(404, 0);
+                            try (OutputStream os = exchange.getResponseBody()) {
+                                os.write("Bild nicht gefunden.".getBytes(StandardCharsets.UTF_8));
+                            }
+                            return;
+                        }
+
+                        byte[] imageBytes = Files.readAllBytes(imageFile.toPath());
+
+                        exchange.getResponseHeaders().add("Content-Type", "image/png");
+                        exchange.sendResponseHeaders(200, imageBytes.length);
+                        try (OutputStream os = exchange.getResponseBody()) {
+                            os.write(imageBytes);
+                        }
+
+                        return;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        exchange.sendResponseHeaders(500, 0);
+                        try (OutputStream os = exchange.getResponseBody()) {
+                            os.write("Serverfehler beim Laden des Bildes.".getBytes(StandardCharsets.UTF_8));
+                        }
+                        return;
+                    }
+                }
+
                 default -> {
                     exchange.sendResponseHeaders(400, 0); // Bad Request
                     responseJson = """
