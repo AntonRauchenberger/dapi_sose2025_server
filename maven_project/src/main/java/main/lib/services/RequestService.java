@@ -9,7 +9,6 @@ import com.sun.net.httpserver.HttpHandler;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -18,7 +17,6 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,6 +46,10 @@ public class RequestService implements Runnable {
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
+            System.out.println("Neue Anfrage von: " + exchange.getRemoteAddress());
+
             if (!"GET".equals(exchange.getRequestMethod())) {
                 exchange.sendResponseHeaders(405, -1); // 405 Method Not Allowed
                 return;
@@ -141,7 +143,8 @@ public class RequestService implements Runnable {
 
         System.out.println("=========================================");
         System.out.println("HTTP Server läuft unter:");
-        System.out.println("GET -> http://" + localIp + ":" + PORT + "/api/data?type=all");
+        System.out.println("Lokale IP: http://" + localIp + ":" + PORT + "/api/data?type=all");
+        System.out.println("Und unter ngrok-konfiguriertem Tunnel https://dashboard.ngrok.com/endpoints");
         System.out.println("=========================================");
 
         try {

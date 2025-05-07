@@ -109,7 +109,6 @@ public class Main {
                         Map<String, Object> coordinates = gson.fromJson(payload, Map.class);
                         double longitude = (double) coordinates.get("longitude");
                         double latitude = (double) coordinates.get("latitude");
-                        System.out.println("Longitude: " + longitude + ", Latitude: " + latitude);
 
                         GpsHelper.updateGpsData(longitude, latitude, USER_ID);
                     }
