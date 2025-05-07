@@ -1,7 +1,12 @@
 package main.lib.services;
 
 import com.sun.net.httpserver.HttpServer;
+
+import main.lib.helpers.GpsHelper;
+import main.lib.helpers.ImageHelper;
+
 import com.sun.net.httpserver.HttpHandler;
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.File;
@@ -14,7 +19,6 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,66 +56,54 @@ public class RequestService implements Runnable {
             URI requestURI = exchange.getRequestURI();
             Map<String, String> queryParams = parseQueryParams(requestURI.getRawQuery());
 
-            String type = queryParams.getOrDefault("type", "all");
-            String responseJson;
+            String type = queryParams.getOrDefault("type", "error");
+            String responseJson = "";
 
-            // TODO add needed functions and responses
             switch (type.toLowerCase()) {
-                case "status" -> responseJson = """
-                        { "status": "success" }
-                        """;
-                case "time" -> responseJson = """
-                        { "timestamp": "%s" }
-                        """.formatted(Instant.now());
-                case "all" -> responseJson = """
-                        {
-                          "status": "success",
-                          "message": "GET request empfangen!",
-                          "timestamp": "%s"
-                        }
-                        """.formatted(Instant.now());
                 case "image" -> {
                     try {
-                        File imageFile = new File("maven_project\\src\\main\\resources\\dog_example.png");
-
-                        if (!imageFile.exists()) {
-                            exchange.sendResponseHeaders(404, 0);
-                            try (OutputStream os = exchange.getResponseBody()) {
-                                os.write("Bild nicht gefunden.".getBytes(StandardCharsets.UTF_8));
-                            }
-                            return;
-                        }
-
-                        byte[] imageBytes = Files.readAllBytes(imageFile.toPath());
-
-                        exchange.getResponseHeaders().add("Content-Type", "image/png");
-                        exchange.sendResponseHeaders(200, imageBytes.length);
-                        try (OutputStream os = exchange.getResponseBody()) {
-                            os.write(imageBytes);
-                        }
-
-                        return;
+                        ImageHelper.handleImageRequest(exchange,
+                                "maven_project\\src\\main\\resources\\dog_example.png");
                     } catch (IOException e) {
                         e.printStackTrace();
-                        exchange.sendResponseHeaders(500, 0);
+                        responseJson = "{ \"error\": \"Serverfehler beim Laden des Bildes.\" }";
+                        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
+                        exchange.sendResponseHeaders(500, responseJson.getBytes(StandardCharsets.UTF_8).length);
                         try (OutputStream os = exchange.getResponseBody()) {
-                            os.write("Serverfehler beim Laden des Bildes.".getBytes(StandardCharsets.UTF_8));
+                            os.write(responseJson.getBytes(StandardCharsets.UTF_8));
                         }
-                        return;
                     }
                 }
-
+                case "location" -> {
+                    String userId = queryParams.get("userId");
+                    if (userId == null || userId.isEmpty()) {
+                        responseJson = """
+                                { "error": "Parameter 'userId' fehlt oder ist leer." }
+                                """;
+                        exchange.sendResponseHeaders(400, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                    } else {
+                        Map<String, Object> gpsData = GpsHelper.getCurrentGpsData(userId);
+                        if (gpsData == null) {
+                            responseJson = """
+                                    { "error": "Keine GPS-Daten für userId '%s' gefunden." }
+                                    """.formatted(userId);
+                            exchange.sendResponseHeaders(404, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                        } else {
+                            responseJson = new Gson().toJson(gpsData);
+                            exchange.sendResponseHeaders(200, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                        }
+                    }
+                }
                 default -> {
-                    exchange.sendResponseHeaders(400, 0); // Bad Request
                     responseJson = """
                             { "error": "Ungültiger 'type'-Parameter." }
                             """;
+                    exchange.sendResponseHeaders(400, responseJson.getBytes(StandardCharsets.UTF_8).length);
                 }
             }
 
             exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
             byte[] responseBytes = responseJson.getBytes(StandardCharsets.UTF_8);
-            exchange.sendResponseHeaders(200, responseBytes.length);
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(responseBytes);
             }

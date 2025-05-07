@@ -4,15 +4,22 @@ import java.util.UUID;
 
 import org.eclipse.paho.client.mqttv3.*;
 
+import main.lib.helpers.MessageHandler;
+
 /**
  * Handles mqtt communication
  */
 public class MqttService implements MqttCallback {
+
+    private MessageHandler messageHandler;
     private IMqttClient publisher;
     private IMqttClient subscriber;
     public static final String SERVER_URL = "tcp://broker.mqttdashboard.com:1883";
 
-    public MqttService() throws MqttException {
+    public MqttService(MessageHandler messageHandler) throws MqttException {
+        // for dynamic data handling
+        this.messageHandler = messageHandler;
+
         MqttConnectOptions options = new MqttConnectOptions();
         options.setCleanSession(true); // discard unsent messages from a previous run
         options.setConnectionTimeout(10);
@@ -36,7 +43,9 @@ public class MqttService implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        System.out.println("Message: " + message.toString());
+        if (messageHandler != null) {
+            messageHandler.handleMessage(topic, message);
+        }
     }
 
     @Override
