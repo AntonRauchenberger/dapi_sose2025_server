@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import main.lib.helpers.GpsHelper;
 import main.lib.helpers.ImageHelper;
+import main.lib.helpers.RouteHelper;
 
 import com.sun.net.httpserver.HttpHandler;
 import com.google.gson.Gson;
@@ -93,6 +94,43 @@ public class RequestService implements Runnable {
                         } else {
                             responseJson = new Gson().toJson(gpsData);
                             exchange.sendResponseHeaders(200, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                        }
+                    }
+                }
+                case "route" -> {
+                    String userId = queryParams.get("userId");
+                    String routeId = queryParams.get("routeId");
+                    String status = queryParams.get("status");
+
+                    if (userId == null || userId.isEmpty() || routeId == null || routeId.isEmpty() || status == null
+                            || status.isEmpty()) {
+                        responseJson = """
+                                { "error": "Parameter fehlen." }
+                                """;
+                        exchange.sendResponseHeaders(400, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                    } else {
+                        if (status.equals("stop")) {
+                            Map<String, Object> routeData = RouteHelper.stopRoute(routeId);
+                            if (routeData == null) {
+                                responseJson = """
+                                        { "error": "Route mit ID '%s' nicht gefunden." }
+                                        """.formatted(routeId);
+                                exchange.sendResponseHeaders(404, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                            } else {
+                                responseJson = new Gson().toJson(routeData);
+                                exchange.sendResponseHeaders(200, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                            }
+                        } else if (status.equals("start")) {
+                            RouteHelper.startRoute(userId, routeId);
+                            responseJson = """
+                                    { "success": "Route wurde gestartet" }
+                                    """;
+                            exchange.sendResponseHeaders(200, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                        } else {
+                            responseJson = """
+                                    { "error": "Ungültiger 'status'-Parameter." }
+                                    """;
+                            exchange.sendResponseHeaders(400, responseJson.getBytes(StandardCharsets.UTF_8).length);
                         }
                     }
                 }
