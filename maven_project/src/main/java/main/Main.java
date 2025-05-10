@@ -83,7 +83,7 @@ public class Main {
                     msg.setRetained(true);
 
                     MqttTopic tempTopic = mqttService.getPublisher()
-                            .getTopic("dapi2025/" + USER_ID + "/gps");
+                            .getTopic("dapi2025/" + USER_ID + "/data");
                     tempTopic.publish(msg);
                     try {
                         Thread.sleep(2000);
@@ -113,7 +113,7 @@ public class Main {
                         GpsHelper.updateGpsData(longitude, latitude, USER_ID);
                     }
                 });
-                mqttService.getSubscriber().subscribe("dapi2025/jEGrvfPcYMMuuMgMVCZeOhaSTz03/gps");
+                mqttService.getSubscriber().subscribe("dapi2025/jEGrvfPcYMMuuMgMVCZeOhaSTz03/data");
             } catch (MqttException e) {
                 e.printStackTrace();
             }

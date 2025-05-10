@@ -36,6 +36,7 @@ public class RouteHelper {
         tempRouteData.put("userId", userId);
         tempRouteData.put("startDate", currentDate);
         tempRouteData.put("duration", "");
+        tempRouteData.put("distance", "");
         tempRouteData.put("routeData", new LinkedList<Map<String, Object>>());
         tempRouteData.put("avgSpeed", "");
         tempRouteData.put("maxSpeed", "");
