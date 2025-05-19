@@ -64,47 +64,6 @@ public class RouteHelper {
         thread.start();
     }
 
-    private static String calculateDuration(String startDateTime) {
-        java.time.LocalDateTime start = java.time.LocalDateTime.parse(startDateTime);
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
-        long minutesBetween = java.time.Duration.between(start, now).toMinutes();
-        return String.valueOf(minutesBetween);
-    }
-
-    private static String calculateTotalDistance(Map<String, Object> route) {
-        @SuppressWarnings("unchecked")
-        LinkedList<Map<String, Object>> points = (LinkedList<Map<String, Object>>) route.get("routeData");
-        if (points == null || points.size() < 2) {
-            return String.valueOf(0.0);
-        }
-
-        double totalDistance = 0.0;
-        final double R = 6371.0; // eaarth radius in kilometers
-
-        for (int i = 1; i < points.size(); i++) {
-            Map<String, Object> prev = points.get(i - 1);
-            Map<String, Object> curr = points.get(i);
-
-            double lat1 = (double) prev.get("latitude");
-            double lon1 = (double) prev.get("longitude");
-            double lat2 = (double) curr.get("latitude");
-            double lon2 = (double) curr.get("longitude");
-
-            // Haversine formula
-            double dLat = Math.toRadians(lat2 - lat1);
-            double dLon = Math.toRadians(lon2 - lon1);
-            double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                    + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                            * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            double distance = R * c;
-
-            totalDistance += distance;
-        }
-
-        return String.valueOf(Math.round(totalDistance * 100.0) / 100.0);
-    }
-
     public static Map<String, Object> stopRoute(String routeId) {
         Map<String, Object> route = routeData.get(routeId);
         if (route == null) {
@@ -115,11 +74,11 @@ public class RouteHelper {
         // TODO avgSpeed, maxSpeed
         // duration
         String startDateTime = (String) route.get("startDate");
-        String duration = calculateDuration(startDateTime);
+        String duration = StatisticsHelper.calculateDuration(startDateTime);
         route.put("duration", duration);
 
         // distance
-        String distance = calculateTotalDistance(route);
+        String distance = StatisticsHelper.calculateTotalDistance(route);
         route.put("distance", distance);
 
         runningRoutes.remove(routeId);

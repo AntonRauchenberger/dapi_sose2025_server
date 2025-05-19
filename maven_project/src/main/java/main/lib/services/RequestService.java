@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpServer;
 import main.lib.helpers.GpsHelper;
 import main.lib.helpers.ImageHelper;
 import main.lib.helpers.RouteHelper;
+import main.lib.helpers.StatisticsHelper;
 
 import com.sun.net.httpserver.HttpHandler;
 import com.google.gson.Gson;
@@ -19,6 +20,7 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -27,8 +29,18 @@ import java.util.Map;
 public class RequestService implements Runnable {
 
     private final static int PORT = 8080;
+    private FirestoreService firestoreService;
+
+    public RequestService() throws IOException {
+        this.firestoreService = new FirestoreService();
+    }
 
     static class GetHandler implements HttpHandler {
+        private final FirestoreService firestoreService;
+
+        public GetHandler(FirestoreService firestoreService) {
+            this.firestoreService = firestoreService;
+        }
 
         // Helper method for parsing query parameters
         private Map<String, String> parseQueryParams(String query) {
@@ -134,6 +146,37 @@ public class RequestService implements Runnable {
                         }
                     }
                 }
+                case "distancedevelopment" -> {
+                    String userId = queryParams.get("userId");
+
+                    if (userId == null || userId.isEmpty()) {
+                        responseJson = """
+                                { "error": "Parameter fehlen." }
+                                """;
+                        exchange.sendResponseHeaders(400, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                    } else {
+                        LinkedList<String> result;
+                        try {
+                            result = StatisticsHelper.calculateDistanceDevelopment(userId,
+                                    this.firestoreService);
+                            if (result == null) {
+                                responseJson = """
+                                        { "error": "Daten fuer User '%s' nicht gefunden." }
+                                        """.formatted(userId);
+                                exchange.sendResponseHeaders(404, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                            } else {
+                                responseJson = new Gson().toJson(result);
+                                exchange.sendResponseHeaders(200, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            responseJson = """
+                                    { "error": "Fehler beim Laden der Routen Daten." }
+                                    """.formatted(userId);
+                            exchange.sendResponseHeaders(404, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                        }
+                    }
+                }
                 default -> {
                     responseJson = """
                             { "error": "Ungültiger 'type'-Parameter." }
@@ -157,7 +200,7 @@ public class RequestService implements Runnable {
 
         try {
             serverHolder[0] = HttpServer.create(new InetSocketAddress(PORT), 0);
-            serverHolder[0].createContext("/api/data", new GetHandler());
+            serverHolder[0].createContext("/api/data", new GetHandler(this.firestoreService));
             serverHolder[0].setExecutor(null); // Default executor
         } catch (IOException e) {
             System.err.println("[Fehler] HTTP-Server konnte nicht erstellt werden:");

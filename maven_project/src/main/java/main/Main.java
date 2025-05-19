@@ -2,6 +2,7 @@ package main;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -17,6 +18,7 @@ import com.google.gson.Gson;
 
 import main.lib.helpers.GpsHelper;
 import main.lib.helpers.MessageHandler;
+import main.lib.helpers.StatisticsHelper;
 import main.lib.services.FirestoreService;
 import main.lib.services.MqttService;
 import main.lib.services.RequestService;
@@ -54,8 +56,10 @@ public class Main {
         // daten.put("alter", 28);
         // daten.put("online", true);
 
-        // String time = firestoreService.saveData("test", "test0", daten);
-        // System.out.println("Gespeichert um: " + time);
+        // FirestoreService firestoreService = new FirestoreService();
+        // LinkedList<String> result =
+        // StatisticsHelper.calculateDistanceDevelopment(USER_ID, firestoreService);
+        // System.out.println("result: " + result);
 
         Thread t1 = new Thread(() -> {
             try {
@@ -68,8 +72,8 @@ public class Main {
                 Random random = new Random();
 
                 while (true) {
-                    double longitude = -180.0 + (random.nextDouble() * 360.0); // Bereich: 13.0 bis 13.8
-                    double latitude = -90.0 + (random.nextDouble() * 180.0); // Bereich: 52.0 bis 52.8
+                    double longitude = -180.0 + (random.nextDouble() * 360.0);
+                    double latitude = -90.0 + (random.nextDouble() * 180.0);
 
                     Map<String, Object> coordinates = new HashMap<>();
                     coordinates.put("longitude", longitude);
