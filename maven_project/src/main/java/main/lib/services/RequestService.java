@@ -89,7 +89,7 @@ public class RequestService implements Runnable {
                         }
                     }
                 }
-                case "location" -> {
+                case "currentdata" -> {
                     String userId = queryParams.get("userId");
                     if (userId == null || userId.isEmpty()) {
                         responseJson = """

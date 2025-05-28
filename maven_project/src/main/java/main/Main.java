@@ -32,11 +32,15 @@ public class Main {
                     double longitude = -180.0 + (random.nextDouble() * 360.0);
                     double latitude = -90.0 + (random.nextDouble() * 180.0);
                     double speed = 3.0 + (random.nextDouble() * 20.0);
+                    int battery = (int) (1 + random.nextDouble() * 100);
+                    String status = "Schüttelt sich";
 
                     Map<String, Object> data = new HashMap<>();
                     data.put("longitude", longitude);
                     data.put("latitude", latitude);
                     data.put("speed", speed);
+                    data.put("battery", battery);
+                    data.put("status", status);
 
                     Gson gson = new Gson();
                     String jsonPayload = gson.toJson(data);
@@ -73,8 +77,11 @@ public class Main {
                         double longitude = (double) data.get("longitude");
                         double latitude = (double) data.get("latitude");
                         double speed = (double) data.get("speed");
+                        int battery = ((Double) data.get("battery")).intValue();
+                        String status = (String) data.get("status");
 
-                        DataHelper.updateCurrentData(new TrafficData(longitude, latitude, speed), USER_ID);
+                        DataHelper.updateCurrentData(new TrafficData(longitude, latitude, speed, battery, status),
+                                USER_ID);
                     }
                 });
                 mqttService.getSubscriber().subscribe("dapi2025/jEGrvfPcYMMuuMgMVCZeOhaSTz03/data");
