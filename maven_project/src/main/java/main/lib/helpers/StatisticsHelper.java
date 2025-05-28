@@ -1,8 +1,10 @@
 package main.lib.helpers;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -49,6 +51,34 @@ public class StatisticsHelper {
         }
 
         return String.valueOf(Math.round(totalDistance * 100.0) / 100.0);
+    }
+
+    public static Map<String, String> calculateMaxAndMinSpeed(Map<String, Object> route) {
+        Map<String, String> result = new HashMap<>();
+        result.put("maxSpeed", "0");
+        result.put("avgSpeed", "0");
+
+        double maxSpeed = 0, avgSpeed, summedSpeed = 0;
+        LinkedList<Map<String, Object>> points = (LinkedList<Map<String, Object>>) route.get("routeData");
+        if (points == null || points.size() < 2) {
+            return result;
+        }
+
+        for (int i = 0; i < points.size(); i++) {
+            Map<String, Object> curr = points.get(i);
+            double speed = (double) curr.get("speed");
+
+            if (speed > maxSpeed) {
+                maxSpeed = speed;
+            }
+
+            summedSpeed += speed;
+        }
+
+        avgSpeed = summedSpeed / points.size();
+        result.put("maxSpeed", String.format(Locale.US, "%.2f", maxSpeed));
+        result.put("avgSpeed", String.format(Locale.US, "%.2f", avgSpeed));
+        return result;
     }
 
     public static LinkedList<String> calculateDistanceDevelopment(String userId, FirestoreService firestoreService)

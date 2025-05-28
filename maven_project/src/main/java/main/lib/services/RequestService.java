@@ -2,7 +2,7 @@ package main.lib.services;
 
 import com.sun.net.httpserver.HttpServer;
 
-import main.lib.helpers.GpsHelper;
+import main.lib.helpers.DataHelper;
 import main.lib.helpers.ImageHelper;
 import main.lib.helpers.RouteHelper;
 import main.lib.helpers.StatisticsHelper;
@@ -97,14 +97,14 @@ public class RequestService implements Runnable {
                                 """;
                         exchange.sendResponseHeaders(400, responseJson.getBytes(StandardCharsets.UTF_8).length);
                     } else {
-                        Map<String, Object> gpsData = GpsHelper.getCurrentGpsData(userId);
-                        if (gpsData == null) {
+                        Map<String, Object> currentData = DataHelper.getCurrentData(userId);
+                        if (currentData == null) {
                             responseJson = """
                                     { "error": "Keine GPS-Daten für userId '%s' gefunden." }
                                     """.formatted(userId);
                             exchange.sendResponseHeaders(404, responseJson.getBytes(StandardCharsets.UTF_8).length);
                         } else {
-                            responseJson = new Gson().toJson(gpsData);
+                            responseJson = new Gson().toJson(currentData);
                             exchange.sendResponseHeaders(200, responseJson.getBytes(StandardCharsets.UTF_8).length);
                         }
                     }
