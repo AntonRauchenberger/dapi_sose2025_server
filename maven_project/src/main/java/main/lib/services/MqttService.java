@@ -14,7 +14,7 @@ public class MqttService implements MqttCallback {
     private MessageHandler messageHandler;
     private IMqttClient publisher;
     private IMqttClient subscriber;
-    public static final String SERVER_URL = "tcp://broker.mqttdashboard.com:1883";
+    public static final String SERVER_URL = "tcp://test.mosquitto.org:1883";
 
     public MqttService(MessageHandler messageHandler) throws MqttException {
         // for dynamic data handling
