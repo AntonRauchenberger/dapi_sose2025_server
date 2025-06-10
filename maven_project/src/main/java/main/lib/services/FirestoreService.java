@@ -3,6 +3,7 @@ package main.lib.services;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.cloud.FirestoreClient;
@@ -44,6 +45,16 @@ public class FirestoreService {
             throws ExecutionException, InterruptedException {
         ApiFuture<WriteResult> result = db.collection(collection).document(documentId).set(data);
         return result.get().getUpdateTime().toString();
+    }
+
+    public String addToSubcollection(String collection, String documentId, String subcollection,
+            Map<String, Object> data)
+            throws ExecutionException, InterruptedException {
+        ApiFuture<DocumentReference> future = db.collection(collection)
+                .document(documentId)
+                .collection(subcollection)
+                .add(data);
+        return future.get().getId();
     }
 
     public Map<String, Object> getDocumentDataByPath(String path) throws ExecutionException, InterruptedException {
