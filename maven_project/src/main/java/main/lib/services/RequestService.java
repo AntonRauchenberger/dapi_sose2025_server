@@ -109,6 +109,26 @@ public class RequestService implements Runnable {
                         }
                     }
                 }
+                case "currentactivitystate" -> {
+                    String userId = queryParams.get("userId");
+                    if (userId == null || userId.isEmpty()) {
+                        responseJson = """
+                                { "error": "Parameter 'userId' fehlt oder ist leer." }
+                                """;
+                        exchange.sendResponseHeaders(400, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                    } else {
+                        Object currentState = DataHelper.getCurrentActivityState(userId);
+                        if (currentState == null) {
+                            responseJson = """
+                                    { "error": "Keine Activity-Daten für userId '%s' gefunden." }
+                                    """.formatted(userId);
+                            exchange.sendResponseHeaders(404, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                        } else {
+                            responseJson = new Gson().toJson(currentState);
+                            exchange.sendResponseHeaders(200, responseJson.getBytes(StandardCharsets.UTF_8).length);
+                        }
+                    }
+                }
                 case "route" -> {
                     String userId = queryParams.get("userId");
                     String routeId = queryParams.get("routeId");

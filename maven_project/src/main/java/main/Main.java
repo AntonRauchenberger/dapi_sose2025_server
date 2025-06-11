@@ -9,6 +9,7 @@ import org.eclipse.paho.client.mqttv3.*;
 import com.google.gson.Gson;
 import main.lib.helpers.DataHelper;
 import main.lib.helpers.MessageHandler;
+import main.lib.helpers.ActivityAnalyseHelper;
 import main.lib.services.MqttService;
 import main.lib.services.RequestService;
 import main.lib.storers.TrafficData;
@@ -18,130 +19,150 @@ public class Main {
     final static String USER_ID = "jEGrvfPcYMMuuMgMVCZeOhaSTz03";
 
     public static void main(String[] args) throws MqttException, InterruptedException, IOException, ExecutionException {
-        // Thread t1 = new Thread(() -> {
-        // try {
-        // MqttService mqttService = new MqttService(new MessageHandler() {
-        // @Override
-        // public void handleMessage(String topic, MqttMessage message) {
-        // // skip
-        // }
-        // });
-        // Random random = new Random();
+        Thread t1 = new Thread(() -> {
+            try {
+                MqttService mqttService = new MqttService(new MessageHandler() {
+                    @Override
+                    public void handleMessage(String topic, MqttMessage message) {
+                        // skip
+                    }
+                });
+                Random random = new Random();
 
-        // while (true) {
-        // double longitude = -180.0 + (random.nextDouble() * 360.0);
-        // double latitude = -90.0 + (random.nextDouble() * 180.0);
-        // double speed = 3.0 + (random.nextDouble() * 20.0);
-        // int battery = (int) (1 + random.nextDouble() * 100);
-        // String status = "Schüttelt sich";
+                while (true) {
+                    double longitude = -180.0 + (random.nextDouble() * 360.0);
+                    double latitude = -90.0 + (random.nextDouble() * 180.0);
+                    double speed = 3.0 + (random.nextDouble() * 20.0);
+                    int battery = (int) (1 + random.nextDouble() * 100);
 
-        // Map<String, Object> data = new HashMap<>();
-        // data.put("longitude", longitude);
-        // data.put("latitude", latitude);
-        // data.put("speed", speed);
-        // data.put("battery", battery);
-        // data.put("status", status);
+                    int statusChoice = random.nextInt(3);
+                    String status;
+                    switch (statusChoice) {
+                        case 0:
+                            status = "Schüttelt sich";
+                            break;
+                        case 1:
+                            status = "Läuft";
+                            break;
+                        case 2:
+                            status = "Ruht";
+                            break;
+                        default:
+                            status = "Schüttelt sich";
+                            break;
+                    }
 
-        // Gson gson = new Gson();
-        // String jsonPayload = gson.toJson(data);
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("longitude", longitude);
+                    data.put("latitude", latitude);
+                    data.put("speed", speed);
+                    data.put("battery", battery);
+                    data.put("status", status);
 
-        // MqttMessage msg = new MqttMessage(jsonPayload.getBytes());
-        // msg.setQos(1);
-        // msg.setRetained(true);
+                    Gson gson = new Gson();
+                    String jsonPayload = gson.toJson(data);
 
-        // MqttTopic tempTopic = mqttService.getPublisher()
-        // .getTopic("dapi2025/" + USER_ID + "/data");
-        // tempTopic.publish(msg);
-        // try {
-        // Thread.sleep(2000);
-        // } catch (InterruptedException e) {
-        // e.printStackTrace();
-        // }
-        // }
-        // } catch (MqttException e) {
-        // e.printStackTrace();
-        // }
-        // });
-        // t1.setDaemon(true);
-        // t1.start();
+                    MqttMessage msg = new MqttMessage(jsonPayload.getBytes());
+                    msg.setQos(1);
+                    msg.setRetained(true);
 
-        // Thread t2 = new Thread(() -> {
-        // try {
-        // MqttService mqttService = new MqttService(new MessageHandler() {
-        // @Override
-        // public void handleMessage(String topic, MqttMessage message) {
-        // String payload = new String(message.getPayload());
-        // Gson gson = new Gson();
+                    MqttTopic tempTopic = mqttService.getPublisher()
+                            .getTopic("dapi2025/" + USER_ID + "/data");
+                    tempTopic.publish(msg);
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        });
+        t1.setDaemon(true);
+        t1.start();
 
-        // Map<String, Object> data = gson.fromJson(payload, Map.class);
-        // double longitude = (double) data.get("longitude");
-        // double latitude = (double) data.get("latitude");
-        // double speed = (double) data.get("speed");
-        // int battery = ((Double) data.get("battery")).intValue();
-        // String status = (String) data.get("status");
-
-        // DataHelper.updateCurrentData(new TrafficData(longitude, latitude, speed,
-        // battery, status),
-        // USER_ID);
-        // }
-        // });
-        // mqttService.getSubscriber().subscribe("dapi2025/jEGrvfPcYMMuuMgMVCZeOhaSTz03/data");
-        // } catch (MqttException e) {
-        // e.printStackTrace();
-        // }
-        // });
-        // t2.setDaemon(true);
-        // t2.start();
-
-        // Thread t3 = new Thread(new RequestService());
-        // t3.start();
-
-        // try {
-        // t1.join();
-        // t2.join();
-        // t3.join();
-        // } catch (InterruptedException e) {
-        // e.printStackTrace();
-        // }
-
-        Thread thread1 = new Thread(() -> {
+        Thread t2 = new Thread(() -> {
             try {
                 MqttService mqttService = new MqttService(new MessageHandler() {
                     @Override
                     public void handleMessage(String topic, MqttMessage message) {
                         String payload = new String(message.getPayload());
-                        System.out.println(message.toString());
-
                         Gson gson = new Gson();
 
                         Map<String, Object> data = gson.fromJson(payload, Map.class);
                         double longitude = (double) data.get("longitude");
                         double latitude = (double) data.get("latitude");
-                        double speed = (double) data.get("speed_kmph");
-                        int battery = ((Double) data.get("akku")).intValue();
-                        String status = (String) data.get("aktion");
+                        double speed = (double) data.get("speed");
+                        int battery = ((Double) data.get("battery")).intValue();
+                        String status = (String) data.get("status");
 
                         DataHelper.updateCurrentData(new TrafficData(longitude, latitude, speed,
                                 battery, status),
                                 USER_ID);
-
                     }
                 });
-                mqttService.getSubscriber().subscribe("dapi2025/jEGrvfPcYMMuuMgMVCZeOhaSTz03/test");
+                mqttService.getSubscriber().subscribe("dapi2025/jEGrvfPcYMMuuMgMVCZeOhaSTz03/data");
             } catch (MqttException e) {
                 e.printStackTrace();
             }
         });
-        thread1.start();
+        t2.setDaemon(true);
+        t2.start();
 
-        Thread thread2 = new Thread(new RequestService());
-        thread2.start();
+        Thread t3 = new Thread(new RequestService());
+        t3.start();
+
+        Thread t4 = new Thread(new ActivityAnalyseHelper(USER_ID));
+        t4.start();
 
         try {
-            thread1.join();
-            thread2.join();
+            t1.join();
+            t2.join();
+            t3.join();
+            t4.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        // Thread thread1 = new Thread(() -> {
+        // try {
+        // MqttService mqttService = new MqttService(new MessageHandler() {
+        // @Override
+        // public void handleMessage(String topic, MqttMessage message) {
+        // String payload = new String(message.getPayload());
+        // System.out.println(message.toString());
+
+        // Gson gson = new Gson();
+
+        // Map<String, Object> data = gson.fromJson(payload, Map.class);
+        // double longitude = (double) data.get("longitude");
+        // double latitude = (double) data.get("latitude");
+        // double speed = (double) data.get("speed_kmph");
+        // int battery = ((Double) data.get("akku")).intValue();
+        // String status = (String) data.get("aktion");
+
+        // DataHelper.updateCurrentData(new TrafficData(longitude, latitude, speed,
+        // battery, status),
+        // USER_ID);
+
+        // }
+        // });
+        // mqttService.getSubscriber().subscribe("dapi2025/jEGrvfPcYMMuuMgMVCZeOhaSTz03/test");
+        // } catch (MqttException e) {
+        // e.printStackTrace();
+        // }
+        // });
+        // thread1.start();
+
+        // Thread thread2 = new Thread(new RequestService());
+        // thread2.start();
+
+        // try {
+        // thread1.join();
+        // thread2.join();
+        // } catch (InterruptedException e) {
+        // e.printStackTrace();
+        // }
     }
 }

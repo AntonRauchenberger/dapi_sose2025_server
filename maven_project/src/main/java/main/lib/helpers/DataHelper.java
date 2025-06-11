@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import main.lib.storers.ActivityStateData;
 import main.lib.storers.TrafficData;
 
 /**
@@ -13,24 +14,42 @@ public class DataHelper {
 
     // thread-safe map
     private static Map<String, Map<String, Object>> currentData = new ConcurrentHashMap<>();
+    private static Map<String, Object> currentActivityStates = new ConcurrentHashMap<>();
 
     public static void updateCurrentData(TrafficData data, String userId) {
         if (data == null) {
             System.err.println("TrafficData ist null!");
             return;
         }
-        Map<String, Object> tempGpsData = new ConcurrentHashMap<>();
-        tempGpsData.put("longitude", data.getLongitude());
-        tempGpsData.put("latitude", data.getLatitude());
-        tempGpsData.put("speed", data.getSpeed());
-        tempGpsData.put("battery", data.getBattery());
-        tempGpsData.put("status", data.getStatus() != null ? data.getStatus() : "unknown");
-        tempGpsData.put("timestamp", Instant.now().toString());
+        Map<String, Object> tempData = new ConcurrentHashMap<>();
+        tempData.put("longitude", data.getLongitude());
+        tempData.put("latitude", data.getLatitude());
+        tempData.put("speed", data.getSpeed());
+        tempData.put("battery", data.getBattery());
+        tempData.put("status", data.getStatus() != null ? data.getStatus() : "unknown");
+        tempData.put("timestamp", Instant.now().toString());
 
-        currentData.put(userId, tempGpsData);
+        currentData.put(userId, tempData);
     }
 
     public static Map<String, Object> getCurrentData(String userId) {
         return currentData.get(userId);
+    }
+
+    public static void updateCurrentActivityState(ActivityStateData data, String userId) {
+        if (data == null) {
+            System.err.println("ActivityStateData ist null!");
+            return;
+        }
+        Map<String, Object> tempData = new ConcurrentHashMap<>();
+        tempData.put("restingTime", data.getRestingTime());
+        tempData.put("status", data.getStatus());
+        tempData.put("timestamp", data.getTimestamp());
+
+        currentActivityStates.put(userId, tempData);
+    }
+
+    public static Object getCurrentActivityState(String userId) {
+        return currentActivityStates.get(userId);
     }
 }
