@@ -34,7 +34,23 @@ public class Main {
                     double latitude = -90.0 + (random.nextDouble() * 180.0);
                     double speed = 3.0 + (random.nextDouble() * 20.0);
                     int battery = (int) (1 + random.nextDouble() * 100);
-                    String status = "Schüttelt sich";
+
+                    int statusChoice = random.nextInt(3);
+                    String status;
+                    switch (statusChoice) {
+                        case 0:
+                            status = "Schüttelt sich";
+                            break;
+                        case 1:
+                            status = "Läuft";
+                            break;
+                        case 2:
+                            status = "Ruht";
+                            break;
+                        default:
+                            status = "Schüttelt sich";
+                            break;
+                    }
 
                     Map<String, Object> data = new HashMap<>();
                     data.put("longitude", longitude);

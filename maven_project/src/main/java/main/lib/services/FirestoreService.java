@@ -6,12 +6,16 @@ import com.google.firebase.FirebaseOptions;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.WriteResult;
+import java.util.List;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -65,5 +69,16 @@ public class FirestoreService {
         } else {
             return null;
         }
+    }
+
+    public List<Map<String, Object>> getAllDocumentDataByPath(String path)
+            throws ExecutionException, InterruptedException {
+        ApiFuture<QuerySnapshot> future = db.collection(path).get();
+        QuerySnapshot snapshot = future.get();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (QueryDocumentSnapshot doc : snapshot.getDocuments()) {
+            result.add(doc.getData());
+        }
+        return result;
     }
 }

@@ -9,16 +9,15 @@ import java.time.Instant;
 import java.time.Duration;
 
 import main.lib.services.FirestoreService;
+import main.lib.storers.ActivityStateData;
 
 public class ActivityAnalyseHelper implements Runnable {
 
     private String userId;
     private FirestoreService firestoreService;
-    private static HashMap<String, Object> currentActivityStates = new HashMap<>();
 
     /*
      * TODO
-     * firestore getLog anpassen
      * Algorithmen durchgehen
      * testen
      */
@@ -29,7 +28,11 @@ public class ActivityAnalyseHelper implements Runnable {
     }
 
     private void saveCurrentDataToLog() {
-        HashMap<String, Object> currentData = new HashMap<>(DataHelper.getCurrentData(userId));
+        Map<String, Object> data = DataHelper.getCurrentData(userId);
+        if (data == null || data.isEmpty()) {
+            return;
+        }
+        HashMap<String, Object> currentData = new HashMap<>(data);
         try {
             firestoreService.addToSubcollection("logs", userId, "dogLogs", currentData);
         } catch (ExecutionException | InterruptedException e) {
@@ -38,15 +41,14 @@ public class ActivityAnalyseHelper implements Runnable {
         }
     }
 
-    private static double calculateAverageRestingTime() {
+    private double calculateAverageRestingTime() {
         try {
-            List<Map<String, Object>> logs = firestoreService.getDataByPath("logs/" + userId + "/dogLogs");
+            List<Map<String, Object>> logs = firestoreService.getAllDocumentDataByPath("logs/" + userId + "/dogLogs");
             if (logs == null || logs.isEmpty())
                 return 0.0;
 
             Instant now = Instant.now();
             long restingCount = 0;
-            long totalCount = 0;
 
             for (Map<String, Object> entry : logs) {
                 String status = (String) entry.get("status");
@@ -55,25 +57,26 @@ public class ActivityAnalyseHelper implements Runnable {
                     continue;
                 Instant entryTime = Instant.parse(timestampStr);
                 long daysAgo = Duration.between(entryTime, now).toDays();
-                if (daysAgo <= 7) {
-                    totalCount++;
-                    if ("ruht".equalsIgnoreCase(status)) {
+                if (daysAgo >= 0 && daysAgo < 7) {
+                    if ("Ruht".equalsIgnoreCase(status)) {
                         restingCount++;
                     }
                 }
             }
             // Jeder Log steht für 30 Minuten
             double totalRestingMinutes = restingCount * 30.0;
-            return Math.round(totalRestingMinutes * 100.0) / 100.0;
+            // Durchschnitt pro Tag
+            double avgRestingPerDay = totalRestingMinutes / 7.0;
+            return Math.round(avgRestingPerDay * 100.0) / 100.0;
         } catch (Exception e) {
             e.printStackTrace();
             return 0.0;
         }
     }
 
-    private static String calculateAverageStateOfMind() {
+    private String calculateAverageStateOfMind() {
         try {
-            List<Map<String, Object>> logs = firestoreService.getDataByPath("logs/" + userId + "/dogLogs");
+            List<Map<String, Object>> logs = firestoreService.getAllDocumentDataByPath("logs/" + userId + "/dogLogs");
             if (logs == null || logs.isEmpty())
                 return "Keine Daten";
 
@@ -89,13 +92,13 @@ public class ActivityAnalyseHelper implements Runnable {
                     continue;
                 Instant entryTime = Instant.parse(timestampStr);
                 long daysAgo = Duration.between(entryTime, now).toDays();
-                if (daysAgo <= 7) {
+                if (daysAgo >= 0 && daysAgo < 7) {
                     count++;
-                    if ("rennt".equalsIgnoreCase(status))
+                    if ("Läuft".equalsIgnoreCase(status))
                         sum += -1;
-                    else if ("ruht".equalsIgnoreCase(status))
+                    else if ("Ruht".equalsIgnoreCase(status))
                         sum += 2;
-                    else if ("schüttelt sich".equalsIgnoreCase(status))
+                    else if ("Schüttelt sich".equalsIgnoreCase(status))
                         sum += 0;
                 }
             }
@@ -117,21 +120,11 @@ public class ActivityAnalyseHelper implements Runnable {
         }
     }
 
-    private static void calculateCurrentState(String userId) {
+    private void calculateCurrentState(String userId) {
         String status = calculateAverageStateOfMind();
         double restingTime = calculateAverageRestingTime();
-        HashMap<String, Object> currentState = new HashMap<>();
-        currentState.put("status", status);
-        currentState.put("restingTime", restingTime);
-        currentState.put("timestamp", Instant.now().toString());
-        currentActivityStates.put(userId, currentState);
-    }
-
-    public static Object getCurrentActivityStates(String userId) {
-        if (!currentActivityStates.containsKey(userId)) {
-            ActivityAnalyseHelper.calculateCurrentState(userId);
-        }
-        return currentActivityStates.get(userId);
+        DataHelper.updateCurrentActivityState(new ActivityStateData(restingTime, status, Instant.now().toString()),
+                userId);
     }
 
     @Override
