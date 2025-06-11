@@ -16,12 +16,6 @@ public class ActivityAnalyseHelper implements Runnable {
     private String userId;
     private FirestoreService firestoreService;
 
-    /*
-     * TODO
-     * Algorithmen durchgehen
-     * testen
-     */
-
     public ActivityAnalyseHelper(String userId) throws IOException {
         this.userId = userId;
         this.firestoreService = new FirestoreService();
@@ -133,10 +127,7 @@ public class ActivityAnalyseHelper implements Runnable {
             saveCurrentDataToLog();
             calculateCurrentState(userId);
             try {
-
-                // TODO remove comment and seccond sleep for production
-                // Thread.sleep(1800000); // wait 30 minutes
-                Thread.sleep(5000);
+                Thread.sleep(1800000); // wait 30 minutes
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
