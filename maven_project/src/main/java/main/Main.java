@@ -16,7 +16,7 @@ import main.lib.storers.TrafficData;
 
 public class Main {
 
-    final static String USER_ID = "jEGrvfPcYMMuuMgMVCZeOhaSTz03";
+    final static String USER_ID = "Yi3iWfCeusM25edA3Mhtj4fOT5J2";
 
     public static void main(String[] args) throws MqttException, InterruptedException, IOException, ExecutionException {
         Thread t1 = new Thread(() -> {
@@ -102,7 +102,7 @@ public class Main {
                                 USER_ID);
                     }
                 });
-                mqttService.getSubscriber().subscribe("dapi2025/jEGrvfPcYMMuuMgMVCZeOhaSTz03/data");
+                mqttService.getSubscriber().subscribe("dapi2025/" + USER_ID + "/data");
             } catch (MqttException e) {
                 e.printStackTrace();
             }
