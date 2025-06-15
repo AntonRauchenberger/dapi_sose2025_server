@@ -11,6 +11,10 @@ import java.time.Duration;
 import main.lib.services.FirestoreService;
 import main.lib.storers.ActivityStateData;
 
+/**
+ * Hilfsklasse zur Analyse von Aktivitäts- und Ruhezeiten anhand historischer
+ * Logdaten
+ */
 public class ActivityAnalyseHelper implements Runnable {
 
     private String userId;
@@ -21,6 +25,10 @@ public class ActivityAnalyseHelper implements Runnable {
         this.firestoreService = new FirestoreService();
     }
 
+    /**
+     * Speichert die aktuellen Sensordaten des Hundes als neuen Log-Eintrag in
+     * Firestore.
+     */
     private void saveCurrentDataToLog() {
         Map<String, Object> data = DataHelper.getCurrentData(userId);
         if (data == null || data.isEmpty()) {
@@ -35,6 +43,10 @@ public class ActivityAnalyseHelper implements Runnable {
         }
     }
 
+    /**
+     * Berechnet die durchschnittliche tägliche Ruhezeit (in Minuten) der letzten 7
+     * Tage.
+     */
     private double calculateAverageRestingTime() {
         try {
             List<Map<String, Object>> logs = firestoreService.getAllDocumentDataByPath("logs/" + userId + "/dogLogs");
@@ -68,6 +80,10 @@ public class ActivityAnalyseHelper implements Runnable {
         }
     }
 
+    /**
+     * Ermittelt den durchschnittlichen Gemütszustand der letzten 7 Tage anhand
+     * gewichteter Statuswerte.
+     */
     private String calculateAverageStateOfMind() {
         try {
             List<Map<String, Object>> logs = firestoreService.getAllDocumentDataByPath("logs/" + userId + "/dogLogs");
@@ -114,6 +130,9 @@ public class ActivityAnalyseHelper implements Runnable {
         }
     }
 
+    /**
+     * Aktualisiert den aktuellen Aktivitätszustand des Hundes im System.
+     */
     private void calculateCurrentState(String userId) {
         String status = calculateAverageStateOfMind();
         double restingTime = calculateAverageRestingTime();
@@ -121,6 +140,10 @@ public class ActivityAnalyseHelper implements Runnable {
                 userId);
     }
 
+    /**
+     * Startet die zyklische Analyse und Speicherung der Aktivitätsdaten im
+     * Hintergrund.
+     */
     @Override
     public void run() {
         while (true) {

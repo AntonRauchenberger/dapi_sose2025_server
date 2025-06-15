@@ -10,8 +10,14 @@ import java.util.concurrent.ExecutionException;
 
 import main.lib.services.FirestoreService;
 
+/**
+ * Hilfsklasse zur Berechnung von Routenstatistiken und Auswertung von Strecken-
+ * und Geschwindigkeitsdaten.
+ */
 public class StatisticsHelper {
-
+    /**
+     * Berechnet die vergangene Zeit in Minuten zwischen Startzeitpunkt und jetzt.
+     */
     public static String calculateDuration(String startDateTime) {
         java.time.LocalDateTime start = java.time.LocalDateTime.parse(startDateTime);
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
@@ -19,6 +25,9 @@ public class StatisticsHelper {
         return String.valueOf(minutesBetween);
     }
 
+    /**
+     * Berechnet die Gesamtdistanz einer Route in Kilometern anhand der GPS-Punkte.
+     */
     public static String calculateTotalDistance(Map<String, Object> route) {
         @SuppressWarnings("unchecked")
         LinkedList<Map<String, Object>> points = (LinkedList<Map<String, Object>>) route.get("routeData");
@@ -53,6 +62,9 @@ public class StatisticsHelper {
         return String.valueOf(Math.round(totalDistance * 100.0) / 100.0);
     }
 
+    /**
+     * Berechnet die maximale und durchschnittliche Geschwindigkeit einer Route.
+     */
     public static Map<String, String> calculateMaxAndMinSpeed(Map<String, Object> route) {
         Map<String, String> result = new HashMap<>();
         result.put("maxSpeed", "0");
@@ -81,6 +93,10 @@ public class StatisticsHelper {
         return result;
     }
 
+    /**
+     * Gibt die Distanzentwicklung (letzte 14 Werte) der Routen eines Hundes als
+     * Liste zurück.
+     */
     public static LinkedList<String> calculateDistanceDevelopment(String userId, FirestoreService firestoreService)
             throws IOException, ExecutionException, InterruptedException {
         LinkedList<String> distanceDevelopment = new LinkedList<>();

@@ -7,7 +7,8 @@ import org.eclipse.paho.client.mqttv3.*;
 import main.lib.helpers.MessageHandler;
 
 /**
- * Handles mqtt communication
+ * Serviceklasse für die Verwaltung der MQTT-Kommunikation (Verbindung, Senden
+ * und Empfangen von Nachrichten).
  */
 public class MqttService implements MqttCallback {
 
@@ -16,6 +17,10 @@ public class MqttService implements MqttCallback {
     private IMqttClient subscriber;
     public static final String SERVER_URL = "tcp://test.mosquitto.org:1883";
 
+    /**
+     * Initialisiert Publisher und Subscriber für MQTT und verbindet sich mit dem
+     * Broker.
+     */
     public MqttService(MessageHandler messageHandler) throws MqttException {
         // for dynamic data handling
         this.messageHandler = messageHandler;
@@ -36,12 +41,18 @@ public class MqttService implements MqttCallback {
         System.out.println("subscriber connected to broker");
     }
 
+    /**
+     * Wird aufgerufen, wenn die Verbindung zum MQTT-Broker verloren geht.
+     */
     @Override
     public void connectionLost(Throwable cause) {
         System.out.println("Connection lost: " + cause.getMessage());
         cause.printStackTrace();
     }
 
+    /**
+     * Wird aufgerufen, wenn eine neue MQTT-Nachricht empfangen wurde.
+     */
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         if (messageHandler != null) {
@@ -51,7 +62,7 @@ public class MqttService implements MqttCallback {
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-
+        // skip
     }
 
     public IMqttClient getPublisher() {

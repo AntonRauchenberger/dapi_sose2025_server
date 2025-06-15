@@ -7,7 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Handles route tracking and statistics
+ * Hilfsklasse zur Verwaltung von Routen, deren Aufzeichnung und zur Berechnung
+ * von Routenstatistiken.
  */
 public class RouteHelper {
 
@@ -15,6 +16,9 @@ public class RouteHelper {
     private static Map<String, Map<String, Object>> routeData = new ConcurrentHashMap<>();
     private static ConcurrentLinkedQueue<String> runningRoutes = new ConcurrentLinkedQueue<>();
 
+    /**
+     * Fügt einen neuen GPS-Punkt mit Geschwindigkeit zu einer Route hinzu.
+     */
     private static boolean addRoutePoint(String routeId, double latitude, double longitude, double speed) {
         Map<String, Object> route = routeData.get(routeId);
         if (route == null) {
@@ -34,6 +38,9 @@ public class RouteHelper {
         return true;
     }
 
+    /**
+     * Startet die Aufzeichnung einer neuen Route für einen Hund.
+     */
     public static void startRoute(String userId, String routeId) {
         String currentDate = java.time.LocalDateTime.now().toString();
         Map<String, Object> tempRouteData = new ConcurrentHashMap<>();
@@ -70,6 +77,10 @@ public class RouteHelper {
         thread.start();
     }
 
+    /**
+     * Beendet die Aufzeichnung einer Route, berechnet Statistiken und gibt die
+     * Routendaten zurück.
+     */
     public static Map<String, Object> stopRoute(String routeId) {
         Map<String, Object> route = routeData.get(routeId);
         if (route == null) {

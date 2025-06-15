@@ -1,5 +1,9 @@
 package main.lib.storers;
 
+/**
+ * Datenklasse zur Speicherung des aktuellen Aktivitätszustands eines Hundes
+ * (Ruhezeit, Status, Zeitstempel).
+ */
 public class ActivityStateData {
     private double restingTime;
     private String status;

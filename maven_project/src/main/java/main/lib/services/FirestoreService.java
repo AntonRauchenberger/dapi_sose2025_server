@@ -20,12 +20,15 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Get and saves data to firestore
+ * Serviceklasse für das Speichern und Abrufen von Daten aus Firestore.
  */
 public class FirestoreService {
 
     private Firestore db;
 
+    /**
+     * Initialisiert die Verbindung zur Firestore-Datenbank.
+     */
     public FirestoreService() throws IOException {
         FileInputStream serviceAccount = new FileInputStream(
                 "dapi-sose2025-app-firebase-adminsdk-fbsvc-d44312696b.json");
@@ -45,12 +48,18 @@ public class FirestoreService {
         return db;
     }
 
+    /**
+     * Speichert Daten in einer Collection und einem Dokument.
+     */
     public String saveData(String collection, String documentId, Map<String, Object> data)
             throws ExecutionException, InterruptedException {
         ApiFuture<WriteResult> result = db.collection(collection).document(documentId).set(data);
         return result.get().getUpdateTime().toString();
     }
 
+    /**
+     * Fügt ein neues Dokument zu einer Subcollection hinzu.
+     */
     public String addToSubcollection(String collection, String documentId, String subcollection,
             Map<String, Object> data)
             throws ExecutionException, InterruptedException {
@@ -61,6 +70,9 @@ public class FirestoreService {
         return future.get().getId();
     }
 
+    /**
+     * Holt die Daten eines Dokuments anhand des angegebenen Pfads.
+     */
     public Map<String, Object> getDocumentDataByPath(String path) throws ExecutionException, InterruptedException {
         ApiFuture<DocumentSnapshot> future = db.document(path).get();
         DocumentSnapshot document = future.get();
@@ -71,6 +83,9 @@ public class FirestoreService {
         }
     }
 
+    /**
+     * Holt alle Dokumentdaten aus einer angegebenen Collection (Pfad) als Liste.
+     */
     public List<Map<String, Object>> getAllDocumentDataByPath(String path)
             throws ExecutionException, InterruptedException {
         ApiFuture<QuerySnapshot> future = db.collection(path).get();

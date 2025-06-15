@@ -14,11 +14,16 @@ import main.lib.services.MqttService;
 import main.lib.services.RequestService;
 import main.lib.storers.TrafficData;
 
+/**
+ * Hauptklasse zum Starten des Servers und Initialisieren der Threads für MQTT,
+ * HTTP und Aktivitätsanalyse.
+ */
 public class Main {
 
     final static String USER_ID = "jEGrvfPcYMMuuMgMVCZeOhaSTz03";
 
     public static void main(String[] args) throws MqttException, InterruptedException, IOException, ExecutionException {
+        // Thread für den Empfang und die Verarbeitung von MQTT-Nachrichten starten
         Thread thread1 = new Thread(() -> {
             try {
                 MqttService mqttService = new MqttService(new MessageHandler() {
@@ -49,9 +54,11 @@ public class Main {
         });
         thread1.start();
 
+        // Thread für den HTTP-Server (RequestService) starten
         Thread thread2 = new Thread(new RequestService());
         thread2.start();
 
+        // Thread für die zyklische Aktivitätsanalyse starten
         Thread thread3 = new Thread(new ActivityAnalyseHelper(USER_ID));
         thread3.start();
 

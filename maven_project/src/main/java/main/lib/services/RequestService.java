@@ -24,17 +24,25 @@ import java.util.LinkedList;
 import java.util.Map;
 
 /**
- * Handles http get requests
+ * Serviceklasse zur Bereitstellung eines HTTP-Servers für GET-Anfragen (z.B.
+ * aktuelle Daten, Routen, Statistiken).
  */
 public class RequestService implements Runnable {
 
     private final static int PORT = 8080;
     private FirestoreService firestoreService;
 
+    /**
+     * Initialisiert den RequestService mit Firestore-Anbindung.
+     */
     public RequestService() throws IOException {
         this.firestoreService = new FirestoreService();
     }
 
+    /**
+     * Handler für GET-Anfragen, verarbeitet verschiedene Typen von Requests (z.B.
+     * aktuelle Daten, Routen, Statistiken).
+     */
     static class GetHandler implements HttpHandler {
         private final FirestoreService firestoreService;
 
@@ -42,7 +50,9 @@ public class RequestService implements Runnable {
             this.firestoreService = firestoreService;
         }
 
-        // Helper method for parsing query parameters
+        /**
+         * Parst die Query-Parameter aus der URL.
+         */
         private Map<String, String> parseQueryParams(String query) {
             Map<String, String> params = new HashMap<>();
             if (query == null || query.isEmpty())
@@ -57,6 +67,10 @@ public class RequestService implements Runnable {
             return params;
         }
 
+        /**
+         * Verarbeitet eine eingehende HTTP-GET-Anfrage anhand der übergebenen Parameter
+         * und liefert die passende Antwort.
+         */
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
@@ -213,7 +227,9 @@ public class RequestService implements Runnable {
         }
     }
 
-    // Is started as thread, so queries can be handled in the background
+    /**
+     * Startet den HTTP-Server und nimmt Anfragen im Hintergrund entgegen.
+     */
     @Override
     public void run() {
         final HttpServer[] serverHolder = new HttpServer[1];

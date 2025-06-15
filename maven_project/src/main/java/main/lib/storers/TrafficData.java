@@ -1,5 +1,9 @@
 package main.lib.storers;
 
+/**
+ * Datenklasse zur Speicherung der aktuellen Daten eines Hundes
+ * (Position, Geschwindigkeit, Batteriestand, Status).
+ */
 public class TrafficData {
     private double longitude;
     private double latitude;

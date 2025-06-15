@@ -8,7 +8,8 @@ import main.lib.storers.ActivityStateData;
 import main.lib.storers.TrafficData;
 
 /**
- * Saves the current GPS data
+ * Hilfsklasse zum Speichern und Abrufen der aktuellen GPS- und Aktivitätsdaten
+ * eines Hundes.
  */
 public class DataHelper {
 
@@ -16,6 +17,9 @@ public class DataHelper {
     private static Map<String, Map<String, Object>> currentData = new ConcurrentHashMap<>();
     private static Map<String, Object> currentActivityStates = new ConcurrentHashMap<>();
 
+    /**
+     * Speichert die aktuellen GPS-Daten eines Hundes in einer thread-sicheren Map.
+     */
     public static void updateCurrentData(TrafficData data, String userId) {
         if (data == null) {
             System.err.println("TrafficData ist null!");
@@ -36,6 +40,10 @@ public class DataHelper {
         return currentData.get(userId);
     }
 
+    /**
+     * Speichert den aktuellen Aktivitätszustand eines Hundes in einer
+     * thread-sicheren Map.
+     */
     public static void updateCurrentActivityState(ActivityStateData data, String userId) {
         if (data == null) {
             System.err.println("ActivityStateData ist null!");
