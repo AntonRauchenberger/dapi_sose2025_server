@@ -8,10 +8,10 @@
 -   **Datenbank:** Firebase (Firestore)
 -   **Konzept:**
 
-    ![Konzept Bild](maven_project\src\main\resources\concept.png)
+    ![Konzept Bild](maven_project/src/main/resources/concept.png)
 
     Die Services werden in der Main-Methode mittels Threads gestartet und jeder Service verwendet dabei die Helpers. Das Programm **ngrok** ermöglicht dann den HTTPS-Zugriff von außerhalb auf den lokal gehosteten Server.
     Die aktuelle userID wird im Server noch statisch gesetzt. Für die weitere Entwicklung würde diese dann auch dynamisch platziert werden.
 
 Jeder Benutzer bekommt dabei ein Dokument in jeder Collection (logs, images, dogs, ...) in der Firestore-Datenbank, wo die acountspezifischen Daten dann gespeichert werden:
-![Datenbank Bild](maven_project\src\main\resources\database.png)
+![Datenbank Bild](maven_project/src/main/resources/database.png)
